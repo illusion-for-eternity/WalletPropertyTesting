@@ -16,8 +16,15 @@ namespace WalletPropertyTesting.Tests.Arbitraries
         // Конструктор Transaction закритий: створюйте через Transaction.Deposit(money) або Transaction.Withdraw(money).
         public static Arbitrary<Transaction> Transaction()
         {
-            throw new NotImplementedException();
+            var transactionTypeGen = Gen.Elements(TransactionType.Deposit, TransactionType.Withdraw);
 
+            var gen = from money in MoneyGenerator.Money().Generator
+                      from transactionType in transactionTypeGen
+                      select transactionType == TransactionType.Deposit
+                      ? Domain.Transaction.Deposit(money)
+                      : Domain.Transaction.Withdraw(money);
+
+            return Arb.From(gen);
         }
     }
 

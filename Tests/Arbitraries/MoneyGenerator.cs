@@ -19,7 +19,11 @@ namespace WalletPropertyTesting.Tests.Arbitraries
         // нуль — важливий граничний випадок.
         public static Arbitrary<Money> Money()
         {
-            throw new NotImplementedException();
+            var amontGen = Gen.Choose(0, 5000);
+            var gen = from amount in amontGen
+                      select new Money(amount);
+
+            return Arb.From(gen);
         }
     }
 
