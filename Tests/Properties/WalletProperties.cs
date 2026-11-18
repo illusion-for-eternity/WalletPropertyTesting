@@ -45,6 +45,8 @@ namespace WalletPropertyTesting.Tests.Properties
         public Property Withdraw_more_than_curent_balance_throws(Money money)
         {
             Wallet wallet = new Wallet();
+            var startBalance = wallet.Balance;
+            var startHistoryCount = wallet.History.Count;
             bool positiveMoney = money.Amount > 0;
             bool ok = true;
 
@@ -52,6 +54,8 @@ namespace WalletPropertyTesting.Tests.Properties
             {
                 Action act = () => wallet.Withdraw(money);
                 act.Should().Throw<InvalidOperationException>();
+                wallet.Balance.Should().BeEquivalentTo(startBalance);
+                wallet.History.Count.Should().Be(startHistoryCount);
             }
 
             return ok.When(positiveMoney);
