@@ -63,7 +63,7 @@ namespace WalletPropertyTesting.Tests.Properties
 
         // P1 · ТУДИ Й НАЗАД
         [Property(Arbitrary = new[] { typeof(MoneyGenerator) })]
-        public void RoundTrip_deposit_that_withdraw(Money money)
+        public void RoundTrip_deposit_that_withdraws(Money money)
         {
             Wallet wallet = new Wallet();
             var startBalance = wallet.Balance;
