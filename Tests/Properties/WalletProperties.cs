@@ -152,6 +152,23 @@ namespace WalletPropertyTesting.Tests.Properties
 
             act.Should().NotThrow();
         }
+
+        [Property(Arbitrary = new[] { typeof(MoneyGenerator) })]
+        public void WalletService_saves_correct_transactions_count_and_type(Money money)
+        {
+            Wallet walletFromRepo = new Wallet();
+            var startBalance = walletFromRepo.Balance;
+            WalletService service = CreateService();
+            _walletRepo.Setup(g => g.Get(It.Is<Guid>(id => id == walletFromRepo.Id))).Returns(walletFromRepo);
+            var expectedTransactionCount = 2;
+
+            service.Deposit(walletFromRepo.Id, money.Amount);
+            service.Withdraw(walletFromRepo.Id, money.Amount);
+            var actualTransactionCount = walletFromRepo.History.Count;
+
+            actualTransactionCount.Should().Be(expectedTransactionCount);
+            walletFromRepo.History[1].Type.Should().Be(TransactionType.Withdraw);
+        }
     }
 
     public static class WalletExtensions
