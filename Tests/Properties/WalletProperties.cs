@@ -107,7 +107,7 @@ namespace WalletPropertyTesting.Tests.Properties
         }
 
         [Property(Arbitrary = new[] { typeof(TransactionGenerator) })]
-        public Property given_transaction_should_be_saved_with_same_amount_and_type(Transaction transaction)
+        public Property Given_transaction_should_be_saved_with_same_amount_and_type(Transaction transaction)
         {
             bool depositType = transaction.Type == TransactionType.Deposit;
             bool ok = true;
