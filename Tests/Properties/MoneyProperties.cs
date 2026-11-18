@@ -14,7 +14,7 @@ namespace WalletPropertyTesting.Tests.Properties
     public class MoneyProperties
     {
         [Property]
-        public void negative_money_amount_throws(NegativeInt negativeInt)
+        public void Negative_money_amount_throws(NegativeInt negativeInt)
         {
             decimal negativeDecimal = (decimal)negativeInt;
             Action act = () => new Money(negativeDecimal);
