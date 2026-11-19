@@ -20,7 +20,7 @@ namespace WalletPropertyTesting.Tests.Properties
         }
 
         [Property]
-        public void Invalid_id_when_getting_wallet(Guid guid)
+        public void Invalid_id_when_getting_wallet_throws(Guid guid)
         {
             InMemoryWalletRepository inMemoryWalletRepository = CreateRepository();
 
