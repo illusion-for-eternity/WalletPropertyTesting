@@ -153,21 +153,30 @@ namespace WalletPropertyTesting.Tests.Properties
             act.Should().NotThrow();
         }
 
+        // P6 · ПЕРЕДБАЧУВАНА ЗМІНА (МЕТАМОРФНА ВЛАСТИВІСТЬ)
         [Property(Arbitrary = new[] { typeof(MoneyGenerator) })]
-        public void WalletService_saves_correct_transactions_count_and_type(Money money)
+        public Property Metamorphic_double_withdraw_has_double_balance_decrease(Money depositMoney, Money withdrawMoney)
         {
-            Wallet walletFromRepo = new Wallet();
-            var startBalance = walletFromRepo.Balance;
-            WalletService service = CreateService();
-            _walletRepo.Setup(g => g.Get(It.Is<Guid>(id => id == walletFromRepo.Id))).Returns(walletFromRepo);
-            var expectedTransactionCount = 2;
+            bool canWithdraw = depositMoney.Amount >= withdrawMoney.Amount * 2;
+            Wallet wallet = new Wallet();
+            wallet.Deposit(depositMoney);
+            var startBalanceAmount = wallet.Balance.Amount;
+            bool ok = true;
 
-            service.Deposit(walletFromRepo.Id, money.Amount);
-            service.Withdraw(walletFromRepo.Id, money.Amount);
-            var actualTransactionCount = walletFromRepo.History.Count;
+            if (canWithdraw)
+            {
+                var single = wallet.Copy();
+                var twice = wallet.Copy();
 
-            actualTransactionCount.Should().Be(expectedTransactionCount);
-            walletFromRepo.History[1].Type.Should().Be(TransactionType.Withdraw);
+                single.Withdraw(withdrawMoney);
+                twice.Withdraw(new Money(withdrawMoney.Amount * 2));
+
+                var balanceSingle = startBalanceAmount - single.Balance.Amount;
+                var balanceTwice = startBalanceAmount - twice.Balance.Amount;
+                ok = Math.Abs(2 * balanceSingle - balanceTwice) < 0.0001m;
+            }
+
+            return ok.When(canWithdraw);
         }
     }
 
