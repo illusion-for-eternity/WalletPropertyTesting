@@ -155,25 +155,33 @@ namespace WalletPropertyTesting.Tests.Properties
 
         // P6 · ПЕРЕДБАЧУВАНА ЗМІНА (МЕТАМОРФНА ВЛАСТИВІСТЬ)
         [Property(Arbitrary = new[] { typeof(MoneyGenerator) })]
-        public Property Metamorphic_double_withdraw_has_double_balance_decrease(Money depositMoney, Money withdrawMoney)
+        public Property Metamorphic_double_withdraw_from_wallet_service_has_double_balance_decrease(Money depositMoney, Money withdrawMoney)
         {
             bool canWithdraw = depositMoney.Amount >= withdrawMoney.Amount * 2;
-            Wallet wallet = new Wallet();
-            wallet.Deposit(depositMoney);
-            var startBalanceAmount = wallet.Balance.Amount;
+
+            Wallet walletToCopy = new Wallet();
+            walletToCopy.Deposit(depositMoney);
+            var singleFromRepo = walletToCopy.Copy();
+            var twiseFromRepo = walletToCopy.Copy();
+
+            WalletService walletService = CreateService();
+            _walletRepo.Setup(g => g.Get(It.Is<Guid>(id => id == singleFromRepo.Id))).Returns(singleFromRepo);
+            _walletRepo.Setup(g => g.Get(It.Is<Guid>(id => id == twiseFromRepo.Id))).Returns(twiseFromRepo);
+
+            var startBalanceAmount = walletToCopy.Balance.Amount;
             bool ok = true;
 
             if (canWithdraw)
             {
-                var single = wallet.Copy();
-                var twice = wallet.Copy();
+                walletService.Withdraw(singleFromRepo.Id, withdrawMoney.Amount);
+                walletService.Withdraw(twiseFromRepo.Id, withdrawMoney.Amount * 2);
 
-                single.Withdraw(withdrawMoney);
-                twice.Withdraw(new Money(withdrawMoney.Amount * 2));
+                var singleFromGet = walletService.GetBalance(singleFromRepo.Id);
+                var twiseFromGet = walletService.GetBalance(twiseFromRepo.Id);
 
-                var balanceSingle = startBalanceAmount - single.Balance.Amount;
-                var balanceTwice = startBalanceAmount - twice.Balance.Amount;
-                ok = Math.Abs(2 * balanceSingle - balanceTwice) < 0.0001m;
+                var withdrawedSingle = startBalanceAmount - singleFromGet.Amount;
+                var withdrawedTwice = startBalanceAmount - twiseFromGet.Amount;
+                ok = withdrawedTwice == 2 * withdrawedSingle && withdrawedSingle == withdrawMoney.Amount;
             }
 
             return ok.When(canWithdraw);
